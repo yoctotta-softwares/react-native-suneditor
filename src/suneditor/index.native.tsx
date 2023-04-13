@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { SunEditorReactProps } from 'suneditor-react/dist/types/SunEditorReactProps';
 import { WebView } from 'react-native-webview';
 import { useWindowDimensions } from 'react-native';
@@ -62,14 +62,21 @@ export function SunEditor(params: SunEditorReactProps) {
     }
   };
 
+  useEffect(() => {
+    if (_webview) {
+      _webview.current?.injectJavaScript(`
+            editor.setContents(\`${params.defaultValue}\`)
+        `);
+    }
+  }, [params, _webview]);
+
   return (
     <WebView
       ref={_webview}
       // eslint-disable-next-line react-native/no-inline-styles
       style={{
-        width,
-        height: height,
-        backgroundColor: 'red',
+        width: params.width || width,
+        height: params.height || height,
       }}
       allowsFullscreenVideo
       onMessage={onMessage}
@@ -89,7 +96,7 @@ export function SunEditor(params: SunEditorReactProps) {
                 <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
             </head>
             <body>
-                <textarea id="sample" style="width: ${width}px; min-height: ${height}px"></textarea>
+                <textarea id="sample"></textarea>
             </body>
             <script>
                 try{
@@ -98,8 +105,16 @@ export function SunEditor(params: SunEditorReactProps) {
                         // Insert options
                         // Language global object (default: en)
                         // lang: SUNEDITOR_LANG['ko'],
-                        width: ${width - 20},
-                        height: ${height},
+                        width: ${
+                          Number.parseInt(
+                            params.width || width.toString(),
+                            10
+                          ) - 20
+                        },
+                        height: ${Number.parseInt(
+                          params.height || height.toString(),
+                          10
+                        )},
                         // plugins: plugins,
                         buttonList: [
                             ['undo', 'redo'],
@@ -125,7 +140,7 @@ export function SunEditor(params: SunEditorReactProps) {
                         ],
                         
                     });
-
+                    editor.setContents(\`${params.defaultValue}\`)
                     editor.onChange = (data) => {if(window.ReactNativeWebView) {window.ReactNativeWebView.postMessage(JSON.stringify({data, type: 'onChange'}))}}
 
                     const toBase64 = file => new Promise((resolve, reject) => {

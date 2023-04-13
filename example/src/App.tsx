@@ -1,19 +1,12 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply, SunEditor } from 'react-native-suneditor';
+import { StyleSheet, View } from 'react-native';
+import { SunEditor } from 'react-native-suneditor';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
-
-  React.useEffect(() => {
-    multiply(3, 7).then(setResult);
-  }, []);
-
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
-      <SunEditor />
+      <SunEditor defaultValue="<p>test</p>" />
     </View>
   );
 }
